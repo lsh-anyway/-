@@ -14,7 +14,7 @@
       <li v-for="item in goods" class="food-list food-list-hook">
         <h1 class="title">{{item.name}}</h1>
         <ul>
-          <li v-for="food in item.foods" class="food-item border-1px">
+          <li v-for="food in item.foods" class="food-item border-1px" @click="selectFood(food, $event)">
             <div class="icon">
               <img width="57" height="57" :src="food.icon"></img>
             </div>
@@ -25,8 +25,7 @@
                 <span class="count">月售{{food.sellCount}}份</span><span>好评率{{food.rating}}%</span>
               </div>
               <div class="price">
-                <span class="now">￥{{food.price}}</span>
-                <span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
+                <span class="now">￥{{food.price}}</span><span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
               </div>
             </div>
             <div class="cartcontrol-wrapper">
@@ -38,10 +37,12 @@
     </ul>
   </div>
   <shopcart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></shopcart>
+  <food :food="selectedFood" ref="food"></food>
 </div>
 </template>
 
 <script>
+import food from '../food/food'
 import cartcontrol from '../cartcontrol/cartcontrol'
 import shopcart from '../shopcart/shopcart'
 import BScroll from 'better-scroll'
@@ -55,7 +56,8 @@ export default {
     return {
       goods: [],
       listHeight: [],
-      scrollY: 0
+      scrollY: 0,
+      selectedFood: {}
     }
   },
 
@@ -105,6 +107,9 @@ export default {
 
   methods: {
     selectMenu (index, event) {
+      if (!event._constructed) {
+        return
+      }
       let foodList = this.$refs.foodsWrapper.getElementsByClassName('food-list-hook')
       let el = foodList[index]
       this.foodsScroll.scrollToElement(el, 300)
@@ -132,12 +137,20 @@ export default {
         height += item.clientHeight
         this.listHeight.push(height)
       }
+    },
+    selectFood (food, event) {
+      if (!event._constructed) {
+        return
+      }
+      this.selectedFood = food
+      this.$refs.food.show()
     }
   },
 
   components: {
     shopcart,
-    cartcontrol
+    cartcontrol,
+    food
   }
 }
 </script>
