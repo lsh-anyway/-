@@ -2,7 +2,7 @@
 <div class="goods">
   <div class="menu-wrapper" ref="menuWrapper">
     <ul>
-      <li v-for="(item,index) in goods" class="menu-item" :class="{'current': currentIndex===index}" @click="selectMenu(index, $event)">
+      <li v-for="(item,index) in goods" class="menu-item" :class="{'current': currentIndex===index}" @click="selectMenu(index, $event)" ref="menuList">
         <span class="text border-1px">
           <span v-show="item.type>0" class="icon" :class="classMap[item.type]"></span>{{item.name}}
         </span>
@@ -11,7 +11,7 @@
   </div>
   <div class="foods-wrapper" ref="foodsWrapper">
     <ul>
-      <li v-for="item in goods" class="food-list food-list-hook">
+      <li v-for="item in goods" class="food-list food-list-hook" ref="foodList">
         <h1 class="title">{{item.name}}</h1>
         <ul>
           <li v-for="food in item.foods" class="food-item border-1px" @click="selectFood(food, $event)">
@@ -87,6 +87,7 @@ export default {
         let height1 = this.listHeight[i]
         let height2 = this.listHeight[i + 1]
         if (!height2 || (this.scrollY >= height1 && this.scrollY < height2)) {
+          this._followScroll(i)
           return i
         }
       }
@@ -129,7 +130,7 @@ export default {
       })
     },
     _calculateHeight () {
-      let foodList = this.$refs.foodsWrapper.getElementsByClassName('food-list-hook')
+      let foodList = this.$refs.foodList
       let height = 0
       this.listHeight.push(height)
       for (let i = 0; i < foodList.length; i++) {
@@ -144,6 +145,11 @@ export default {
       }
       this.selectedFood = food
       this.$refs.food.show()
+    },
+    _followScroll (index) {
+      let menuList = this.$refs.menuList
+      let el = menuList[index]
+      this.menuScroll.scrollToElement(el, 300, 0, -100)
     }
   },
 
