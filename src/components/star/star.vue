@@ -1,7 +1,7 @@
 <template>
-<div class="star" :class="starType">
-	<span v-for="itemClass in itemClasses" :class="itemClass" class="star-item"></span>
-</div>
+  <div class="star" :class="starType">
+    <span v-for="itemClass in itemClasses" :class="itemClass" class="star-item"></span>
+  </div>
 </template>
 
 <script>
@@ -42,12 +42,6 @@ export default {
         result.push(CLS_OFF)
       }
       return result
-    }
-  },
-
-  data () {
-    return {
-
     }
   }
 }
@@ -102,5 +96,4 @@ export default {
           bg-image('star24_half')
         &.off
           bg-image('star24_off')
-
 </style>

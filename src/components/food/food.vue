@@ -1,68 +1,69 @@
 <template>
-<transition name="move">
-  <div class="food" v-show="showFlag" ref="food">
-    <div class="food-content">
-      <div class="image-header">
-        <img :src="food.image">
-        <div class="back" @click="hide">
-          <i class="icon-arrow_lift"></i>
+  <transition name="move">
+    <div class="food" v-show="showFlag" ref="food">
+      <div class="food-content">
+        <div class="image-header">
+          <img :src="food.image">
+          <div class="back" @click="hide">
+            <i class="icon-arrow_lift"></i>
+          </div>
         </div>
-      </div>
-      <div class="content">
-        <h1 class="title">{{food.name}}</h1>
-        <div class="detail">
-          <span class="sell-count">月售{{food.sellCount}}份</span>
-          <span class="rating">好评率{{food.rating}}%</span>
+        <div class="content">
+          <h1 class="title">{{food.name}}</h1>
+          <div class="detail">
+            <span class="sell-count">月售{{food.sellCount}}份</span>
+            <span class="rating">好评率{{food.rating}}%</span>
+          </div>
+          <div class="price">
+            <span class="now">￥{{food.price}}</span><span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
+          </div>
+          <div class="cartcontrol-wrapper">
+            <cartcontrol :food="food"></cartcontrol>
+          </div>
+          <transition name="fade">
+            <div class="buy" v-show="!food.count || food.count ===0" @click.stop="addFirst">
+              加入购物车
+            </div>
+          </transition>
         </div>
-        <div class="price">
-          <span class="now">￥{{food.price}}</span>
-          <span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
+        <split v-show="food.info"></split>
+        <div class="info" v-show="food.info">
+          <div class="title">商品信息</div>
+          <p class="text">{{food.info}}</p>
         </div>
-        <div class="cartcontrol-wrapper">
-          <cartcontrol :food="food"></cartcontrol>
-        </div>
-        <transition name="fade">
-          <div class="buy" v-show="!food.count || food.count ===0" @click="addFirst($event)">加入购物车</div>
-        </transition>
-      </div>
-      <split v-show="food.info"></split>
-      <div class="info" v-show="food.info">
-        <div class="title">商品信息</div>
-        <p class="text">{{food.info}}</p>
-      </div>
-      <split v-show="food.ratings"></split>
-      <div class="rating">
-        <div class="title">商品评价</div>
-        <ratingselect @select="selectRating" @toggle="toggleContent" :select-type="selectType" :only-content="onlyContent" :desc="desc" :ratings="food.ratings"></ratingselect>
-        <div class="rating-wrapper">
-          <ul v-show="food.ratings && food.ratings.length">
-            <li v-show="needShow(rating.rateType,rating.text)" v-for="rating in food.ratings" class="rating-item border-1px">
-              <div class="user">
-                <span class="name">{{rating.username}}</span>
-                <img :src="rating.avatar" class="avatar" width="12" height="12">
-              </div>
-              <div class="time">{{rating.rateTime | formatDate}}</div>
-              <p class="text">
-                <span :class="{'icon-thumb_up':rating.rateType===0, 'icon-thumb_down':rating.rateType===1}"></span>{{rating.text}}
-              </p>
-            </li>
-          </ul>
-          <div class="no-rating" v-show="!food.ratings && !food.ratings.length">暂无评价</div>
+        <split v-show="food.ratings"></split>
+        <div class="rating">
+          <div class="title">商品评价</div>
+          <ratingselect @select="selectRating" @toggle="toggleContent" :select-type="selectType" :only-content="onlyContent" :desc="desc" :ratings="food.ratings"></ratingselect>
+          <div class="rating-wrapper">
+           <ul v-show="food.ratings && food.ratings.length"></ul>
+              <li v-show="needShow(rating.rateType,rating.text)" v-for="rating in food.ratings" class="rating-item border-1px">
+                <div class="user">
+                  <span class="name">{{rating.username}}</span>
+                  <img :src="rating.avatar" class="avatar" width="12" height="12">
+                </div>
+                <div class="time">{{rating.rateTime | formatDate}}</div>
+                <p class="text">
+                  <span :class="{'icon-thumb_up':rating.rateType===0, 'icon-thumb_down':rating.rateType===1}"></span>{{rating.text}}
+                </p>
+              </li>
+            </ul>
+            <div class="no-rating" v-show="!food.ratings || !food.ratings.length">暂无评价</div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</transition>
+  </transition>
 </template>
 
 <script>
+import BScroll from 'better-scroll'
+import Vue from 'vue'
+import {bus} from '../bus/bus'
 import {formatDate} from '../../commom/js/date'
+import cartcontrol from '../cartcontrol/cartcontrol'
 import ratingselect from '../ratingselect/ratingselect'
 import split from '../split/split'
-import {bus} from '../bus/bus'
-import Vue from 'vue'
-import cartcontrol from '../cartcontrol/cartcontrol'
-import BScroll from 'better-scroll'
 
 // const POSITIVE = 0
 // const NEGATIVE = 1
@@ -111,11 +112,11 @@ export default {
       this.onlyContent = true
       this.$nextTick(() => {
         if (!this.scoll) {
-          this.scoll = new BScroll(this.$refs.food, {
+          this.scroll = new BScroll(this.$refs.food, {
             click: true
           })
         } else {
-          this.scoll.refresh()
+          this.scroll.refresh()
         }
       })
     },
@@ -126,21 +127,8 @@ export default {
       if (!event._constructed) {
         return
       }
-      Vue.set(this.food, 'count', 1)
       bus.$emit('cart.add', event.target)
-    },
-    selectRating (type) {
-      this.selectType = type
-      this.$nextTick(() => {
-        this.scroll.refresh()
-      })
-    },
-    toggleContent () {
-      this.onlyContent = !this.onlyContent
-      this.$nextTick(() => {
-        console.log(typeof this.scoll.refresh)
-        this.scroll.refresh()
-      })
+      Vue.set(this.food, 'count', 1)
     },
     needShow (type, text) {
       if (this.onlyContent && !text) {
@@ -151,6 +139,18 @@ export default {
       } else {
         return type === this.selectType
       }
+    },
+    selectRating (type) {
+      this.selectType = type
+      this.$nextTick(() => {
+        this.scroll.refresh()
+      })
+    },
+    toggleContent () {
+      this.onlyContent = !this.onlyContent
+      this.$nextTick(() => {
+        this.scroll.refresh()
+      })
     }
   }
 }

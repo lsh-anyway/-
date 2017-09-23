@@ -70,6 +70,14 @@
 import star from '../star/star'
 
 export default {
+  name: 'header',
+
+  data () {
+    return {
+      detailShow: false
+    }
+  },
+
   props: {
     seller: {
       type: Object
@@ -78,14 +86,6 @@ export default {
 
   created () {
     this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee']
-  },
-
-  name: 'header',
-
-  data () {
-    return {
-      detailShow: false
-    }
   },
 
   methods: {
